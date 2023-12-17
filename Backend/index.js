@@ -1,9 +1,12 @@
 const express = require("express");
 const { connection } = require("./db");
 const path = require("path");
+const cors = require("cors");
+const { employeeRoutes } = require("./routes/employee.routes");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   try {
@@ -13,7 +16,7 @@ app.get("/", (req, res) => {
   }
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/", employeeRoutes);
 // app.use("/users", userRouter);
 // app.use("/doctor", doctorRouter);
 

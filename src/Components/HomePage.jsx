@@ -1,30 +1,31 @@
-import { Button, Input } from "@mui/material";
+import {
+  Button,
+  Input,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { uploadFile } from "../Redux/action";
 
 const HomePage = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const dispatch = useDispatch();
+  const uploading = useSelector((store) => store.uploadReducer.uploading);
+  const [selectedFile, setSelectedFile] = useState();
+  const uploadedData = useSelector((store) => store.uploadReducer.uploadedData);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
 
-  const handleUpload = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      await axios.post("http://localhost:8080/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      alert("File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error.message);
-      alert("Error uploading file. Please try again.");
-    }
+  const handleUpload = () => {
+    dispatch(uploadFile(selectedFile));
   };
   return (
     <div>
@@ -37,6 +38,39 @@ const HomePage = () => {
       >
         Upload
       </Button>
+
+      {uploadedData && Array.isArray(uploadedData) && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Employee ID</TableCell>
+                <TableCell>Employee Name</TableCell>
+                <TableCell>Employee Status</TableCell>
+                <TableCell>Joining Date</TableCell>
+                <TableCell>Birth Date</TableCell>
+                <TableCell>Skill</TableCell>
+                <TableCell>Salary Details</TableCell>
+                <TableCell>Address</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {uploadedData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.employeeId}</TableCell>
+                  <TableCell>{row.employeeName}</TableCell>
+                  <TableCell>{row.employeeStatus}</TableCell>
+                  <TableCell>{row.joiningDate}</TableCell>
+                  <TableCell>{row.birthDate}</TableCell>
+                  <TableCell>{row.skill}</TableCell>
+                  <TableCell>{row.salaryDetails}</TableCell>
+                  <TableCell>{row.address}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </div>
   );
 };

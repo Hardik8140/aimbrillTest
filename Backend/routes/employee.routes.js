@@ -1,24 +1,43 @@
 const express = require("express");
 const multer = require("multer");
 const { employeeModel } = require("../model/employee.model");
+const excletojson = require("convert-excel-to-json");
+const fs = require("fs-extra");
 
 const employeeRoutes = express.Router();
 
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     return cb(null, "./public/Images");
+//   },
+//   filename: function (req, file, cb) {
+//     return cb(null, `${Date.now()}_${file.originalname}`);
+//   },
+// });
+
 const upload = multer({ dest: "uploads/" });
 
-employeeRoutes.post("/upload", upload.single("file"), async (req, res) => {
+// const upload = multer({ storage });
+
+employeeRoutes.post("/read", upload.single("file"), async (req, res) => {
   try {
-    const { filename, path } = req.file;
+    if (req.file?.filename === null || req.file?.filename == "undefined") {
+      req.status(400).json({ message: "No file" });
+    } else {
+      const filepath = "uploads/" + req.file.filename;
 
-    const employee = new employeeModel({
-      fileName: filename,
-      filePath: path,
-    });
-
-    const saveEmployee = await employee.save();
-    res
-      .status(200)
-      .json({ message: "File uploaded successful", employee: saveEmployee });
+      const excleData = excletojson({
+        sourceFile: filepath,
+        header: {
+          rows: 1,
+        },
+        columnToKey: {
+          "*": "{{columnHeader}}",
+        },
+      });
+      fs.remove(filepath);
+      res.status(200).json(excleData);
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
